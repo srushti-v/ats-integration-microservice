@@ -1,0 +1,55 @@
+service: ats-integration-service
+provider:
+  name: aws
+  runtime: python3.9
+
+plugins:
+  - serverless-offline
+
+custom:
+  serverless-offline:
+    httpPort: 3000
+
+functions:
+  health:
+    handler: handlers.health.health
+    events:
+      - http:
+          path: health
+          method: get
+
+  getJobs:
+    handler: handlers.jobs.get_jobs
+    events:
+      - http:
+          path: jobs
+          method: get
+
+  createJob:
+    handler: handlers.jobs.create_job
+    events:
+      - http:
+          path: jobs
+          method: post
+
+  createCandidate:
+    handler: handlers.candidates.create_candidate
+    events:
+      - http:
+          path: candidates
+          method: post
+
+  listCandidates:
+    handler: handlers.candidates.list_candidates
+    events:
+      - http:
+          path: candidates
+          method: get
+
+  getApplications:
+    handler: handlers.applications.get_applications
+    events:
+      - http:
+          path: applications
+          method: get
+
