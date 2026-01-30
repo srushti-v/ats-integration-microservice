@@ -51,7 +51,7 @@ npm install serverless-offline
 2. **Run Serverless Offline**:
 
 ```bash
-serverless offline --httpPort 3000
+serverless offline 
 ```
 
 3. The API will be available at:
