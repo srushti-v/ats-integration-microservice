@@ -6,7 +6,13 @@ def get_applications(event, context):
     job_id = params.get("job_id")
 
     if not job_id:
-        return {"statusCode": 400, "body": json.dumps({"error": "job_id query parameter is required"})}
+        return {
+            "statusCode": 400,
+            "body": json.dumps({
+                "error": "job_id query parameter is required",
+                "example": "/applications?job_id=123"
+            })
+        }
 
     candidates = load_candidates()
 

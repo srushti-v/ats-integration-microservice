@@ -35,13 +35,7 @@ def save_candidates(candidates):
 
 # -----------------------------
 # Interactive API functions
-def test_health():
-    url = f"{BASE_URL}/health"
-    try:
-        response = requests.get(url)
-        print("Health Endpoint:", response.json())
-    except Exception as e:
-        print("Error:", e)
+
 
 def list_jobs():
     jobs_store = load_jobs()
@@ -127,28 +121,26 @@ def get_applications():
 def menu():
     while True:
         print("\n=== ATS Menu ===")
-        print("1. Test Health")
-        print("2. List Jobs")
-        print("3. Add Job")
-        print("4. Add Candidate")
-        print("5. List Candidates")
-        print("6. Get Applications")
-        print("7. Exit")
-        choice = input("Choose an option (1-7): ")
+        print("1. List Jobs")
+        print("2. Add Job")
+        print("3. Add Candidate")
+        print("4. List Candidates")
+        print("5. Get Applications")
+        print("6. Exit")
+        choice = input("Choose an option (1-6): ")
+
 
         if choice == "1":
-            test_health()
-        elif choice == "2":
             list_jobs()
-        elif choice == "3":
+        elif choice == "2":
             add_job()
-        elif choice == "4":
+        elif choice == "3":
             add_candidate()
-        elif choice == "5":
+        elif choice == "4":
             list_candidates()
-        elif choice == "6":
+        elif choice == "5":
             get_applications()
-        elif choice == "7":
+        elif choice == "6":
             print("Exiting...")
             break
         else:
