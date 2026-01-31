@@ -1,5 +1,7 @@
+import json
+
 def health(event, context):
     return {
         "statusCode": 200,
-        "body": "OK"
+        "body": json.dumps({"message": "Server is running"})
     }

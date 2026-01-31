@@ -1,80 +1,32 @@
 import json
-import os
 import requests
+from zoho_client import ZohoRecruitClient
 
 BASE_URL = "http://localhost:3000/dev"  # Serverless offline URL
+zoho = ZohoRecruitClient()
 
 # -----------------------------
-# JSON file paths
-JOBS_FILE = "handlers/jobs_store.json"
-CANDIDATES_FILE = "handlers/candidates_store.json"
-
-# -----------------------------
-# Helper functions to persist jobs and candidates
-def load_json(file_path):
-    if os.path.exists(file_path):
-        with open(file_path, "r") as f:
-            return json.load(f)
-    return []
-
-def save_json(file_path, data):
-    with open(file_path, "w") as f:
-        json.dump(data, f, indent=2)
-
-def load_jobs():
-    return load_json(JOBS_FILE)
-
-def save_jobs(jobs):
-    save_json(JOBS_FILE, jobs)
-
-def load_candidates():
-    return load_json(CANDIDATES_FILE)
-
-def save_candidates(candidates):
-    save_json(CANDIDATES_FILE, candidates)
-
-# -----------------------------
-# Interactive API functions
-
+# CLI functions using API endpoints
 
 def list_jobs():
-    jobs_store = load_jobs()
-    print("\n--- Jobs ---")
-    if not jobs_store:
-        print("No jobs available.")
-    for job in jobs_store:
-        print(f"{job['id']}: {job['title']} ({job['location']}) [{job['status']}]")
-
-def add_job():
-    jobs_store = load_jobs()
-    job_id = str(len(jobs_store) + 1)
-    title = input("Enter Job Title: ")
-    location = input("Enter Job Location: ")
-    status = input("Enter Status (OPEN/CLOSED/DRAFT): ").upper()
-    external_url = input("Enter Job URL: ")
-    job = {
-        "id": job_id,
-        "title": title,
-        "location": location,
-        "status": status,
-        "external_url": external_url
-    }
-    jobs_store.append(job)
-    save_jobs(jobs_store)
-    print("Job added successfully.")
+    """Fetch jobs from Zoho API"""
+    try:
+        jobs = zoho.get_jobs()  # You can also call GET /jobs endpoint
+        print("\n--- Jobs ---")
+        if not jobs:
+            print("No jobs available.")
+        for job in jobs:
+            print(f"{job['job_id']}: {job['title']} ({job['location']})")
+    except Exception as e:
+        print("Error fetching jobs:", e)
 
 def add_candidate():
+    """Add candidate via API (Zoho)"""
     name = input("Enter candidate name: ")
     email = input("Enter email: ")
     phone = input("Enter phone: ")
     resume_url = input("Enter resume URL: ")
     job_id = input("Enter Job ID: ")
-
-    # Validate job exists
-    jobs_store = load_jobs()
-    if not any(j["id"] == job_id for j in jobs_store):
-        print("Invalid Job ID! Candidate not added.")
-        return
 
     candidate = {
         "name": name,
@@ -84,63 +36,62 @@ def add_candidate():
         "job_id": job_id
     }
 
-    candidates_store = load_candidates()
-    candidates_store.append(candidate)
-    save_candidates(candidates_store)
-
-    # Optionally, POST to your serverless backend
     try:
+        # POST to serverless endpoint
         response = requests.post(f"{BASE_URL}/candidates", json=candidate)
-        print(response.json())
+        print("Response:", response.json())
     except Exception as e:
-        print("Candidate added locally, but failed to POST to server:", e)
+        print("Failed to add candidate:", e)
 
 def list_candidates():
-    candidates_store = load_candidates()
-    jobs_store = load_jobs()
-    print("\n--- Candidates ---")
-    if not candidates_store:
-        print("No candidates found.")
-    for c in candidates_store:
-        job = next((j for j in jobs_store if j["id"] == c["job_id"]), None)
-        job_title = job["title"] if job else "Unknown Job"
-        print(f"{c['name']} - {c['email']} - Job: {job_title}")
+    """List all candidates"""
+    try:
+        response = requests.get(f"{BASE_URL}/candidates")
+        candidates = response.json()
+        print("\n--- Candidates ---")
+        if not candidates:
+            print("No candidates found.")
+        for c in candidates:
+            print(f"{c['name']} - {c['email']} - Job ID: {c['job_id']}")
+    except Exception as e:
+        print("Error fetching candidates:", e)
 
 def get_applications():
+    """Get applications for a job"""
     job_id = input("Enter Job ID: ")
-    candidates_store = load_candidates()
-    apps = [c for c in candidates_store if c["job_id"] == job_id]
-    print(f"\nApplications for Job ID {job_id}:")
-    if not apps:
-        print("No applications found.")
-    for a in apps:
-        print(f"{a['name']} - {a['email']} - Status: APPLIED")
+    try:
+        response = requests.get(f"{BASE_URL}/applications", params={"job_id": job_id})
+        applications = response.json()
+        print(f"\nApplications for Job ID {job_id}:")
+        if not applications:
+            print("No applications found.")
+        for a in applications:
+            print(f"{a['candidate_name']} - {a['email']} - Status: {a['status']}")
+    except Exception as e:
+        print("Error fetching applications:", e)
 
 # -----------------------------
 # Menu loop
+
 def menu():
     while True:
         print("\n=== ATS Menu ===")
         print("1. List Jobs")
-        print("2. Add Job")
-        print("3. Add Candidate")
-        print("4. List Candidates")
-        print("5. Get Applications")
-        print("6. Exit")
-        choice = input("Choose an option (1-6): ")
-
+        print("2. Add Candidate")
+        print("3. List Candidates")
+        print("4. Get Applications")
+        print("5. Exit")
+        choice = input("Choose an option (1-5): ")
 
         if choice == "1":
             list_jobs()
         elif choice == "2":
-            add_job()
-        elif choice == "3":
             add_candidate()
-        elif choice == "4":
+        elif choice == "3":
             list_candidates()
-        elif choice == "5":
+        elif choice == "4":
             get_applications()
-        elif choice == "6":
+        elif choice == "5":
             print("Exiting...")
             break
         else:

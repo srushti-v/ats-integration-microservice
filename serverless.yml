@@ -33,7 +33,6 @@ functions:
           path: jobs
           method: post
 
-
   createCandidate:
     handler: handlers.candidates.create_candidate
     events:
@@ -54,4 +53,3 @@ functions:
       - http:
           path: applications
           method: get
-

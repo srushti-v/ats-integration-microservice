@@ -1,35 +1,41 @@
 import json
-import os
+from zoho_client import ZohoRecruitClient
 
-DATA_FILE = "handlers/candidates_store.json"  # your JSON file
+zoho = ZohoRecruitClient()
 
-# ✅ Load candidates from JSON
-def load_candidates():
-    if os.path.exists(DATA_FILE):
-        with open(DATA_FILE, "r") as f:
-            return json.load(f)
-    return []
 
-# ✅ Save candidates to JSON
-def save_candidates(candidates):
-    with open(DATA_FILE, "w") as f:
-        json.dump(candidates, f)
-
-# Create a candidate
 def create_candidate(event, context):
-    body = json.loads(event["body"])
-    candidates = load_candidates()
-    candidates.append(body)
-    save_candidates(candidates)
-    return {
-        "statusCode": 201,
-        "body": json.dumps({"message": "Candidate created"})
-    }
+    """
+    POST /candidates
+    Add candidate dynamically and push to Zoho mock API
+    """
+    try:
+        body = json.loads(event.get("body", "{}"))
+        response = zoho.create_candidate(body)  # Zoho mock creates candidate
+        return {
+            "statusCode": 201,
+            "body": json.dumps(response)
+        }
+    except Exception as e:
+        return {
+            "statusCode": 500,
+            "body": json.dumps({"error": str(e)})
+        }
 
-# List all candidates
+
 def list_candidates(event, context):
-    candidates = load_candidates()
-    return {
-        "statusCode": 200,
-        "body": json.dumps(candidates)
-    }
+    """
+    GET /candidates
+    List all candidates from Zoho mock
+    """
+    try:
+        candidates = zoho.get_applications(job_id=None)  # Returns all candidates
+        return {
+            "statusCode": 200,
+            "body": json.dumps(candidates)
+        }
+    except Exception as e:
+        return {
+            "statusCode": 500,
+            "body": json.dumps({"error": str(e)})
+        }
