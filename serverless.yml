@@ -13,6 +13,7 @@ custom:
 functions:
   health:
     handler: handlers.health.health
+    timeout: 10
     events:
       - http:
           path: health
@@ -52,4 +53,3 @@ functions:
       - http:
           path: applications
           method: get
-
